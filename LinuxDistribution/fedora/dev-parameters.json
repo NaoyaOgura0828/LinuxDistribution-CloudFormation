@@ -1,0 +1,36 @@
+{
+    "Parameters": [
+        {
+            "ParameterKey": "SystemName",
+            "ParameterValue": "LinuxDistribution"
+        },
+        {
+            "ParameterKey": "EnvType",
+            "ParameterValue": "dev"
+        },
+        {
+            "ParameterKey": "AMIID",
+            "ParameterValue": "ami-0575f60b9ee1cd7f4"
+        },
+        {
+            "ParameterKey": "InstanceType",
+            "ParameterValue": "m5a.large"
+        },
+        {
+            "ParameterKey": "IsEncrypted",
+            "ParameterValue": "false"
+        },
+        {
+            "ParameterKey": "VolumeSize",
+            "ParameterValue": "30"
+        },
+        {
+            "ParameterKey": "VolumeType",
+            "ParameterValue": "gp2"
+        },
+        {
+            "ParameterKey": "KeyName",
+            "ParameterValue": "LinuxDistribution-dev"
+        }
+    ]
+}

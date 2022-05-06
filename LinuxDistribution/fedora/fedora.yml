@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Fedora For LinuxDistribution
+
+Parameters:
+  SystemName:
+    Type: String
+    AllowedPattern: '[a-zA-Z0-9-]*'
+  EnvType:
+    Description: Environment type.
+    Type: String
+    AllowedValues: [dev, stg, prod]
+    ConstraintDescription: must specify dev, stg, or prod.
+  AMIID:
+    Type: String
+    AllowedPattern: '[a-z0-9-]*'
+  InstanceType:
+    Type: String
+  IsEncrypted:
+    Type: String
+  VolumeSize:
+    Type: Number
+  VolumeType:
+    Type: String
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+
+Mappings:
+  AzMap:
+    ap-northeast-1:
+      1st: ap-northeast-1a
+      2nd: ap-northeast-1c
+      3rd: ap-northeast-1d
+
+Resources:
+  # Fedora 起動テンプレート 作成
+  LaunchTemplateFedora:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub
+        - ${SystemName}-${EnvType}-Fedora-lnchtpl
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: '/dev/sda1'
+            Ebs:
+              Encrypted: !Ref IsEncrypted
+              VolumeSize: !Ref VolumeSize
+              VolumeType: !Ref VolumeType
+              DeleteOnTermination: true
+        DisableApiTermination: false
+        InstanceInitiatedShutdownBehavior: stop
+        EbsOptimized: false
+        HibernationOptions:
+          Configured: false
+        EnclaveOptions:
+          Enabled: false
+        ImageId: !Ref AMIID
+        Monitoring:
+          Enabled: true
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub
+            - ${SystemName}-${EnvType}-ec2-sg
+            - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub
+                  - ${SystemName}-${EnvType}-Fedora
+                  - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+              - Key: SystemName
+                Value: !Ref SystemName
+              - Key: EnvType
+                Value: !Ref EnvType
+
+  # EC2 作成
+  EC2InstanceFedora:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplateFedora
+        Version: !GetAtt LaunchTemplateFedora.LatestVersionNumber
+      SubnetId:
+        Fn::ImportValue: !Sub
+          - ${SystemName}-${EnvType}-public-subnet
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+
+  # EIP作成
+  EIPFedora:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref EC2InstanceFedora
+      Tags:
+        - Key: Name
+          Value: !Sub
+          - ${SystemName}-${EnvType}-Fedora-eip
+          - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
+        - Key: SystemName
+          Value: !Ref SystemName
+        - Key: EnvType
+          Value: !Ref EnvType
+
+Outputs:
+  EC2InstanceFedora:
+    Value: !Ref EC2InstanceFedora
+    Export:
+      Name: !Sub
+        - ${SystemName}-${EnvType}-Fedora
+        - {SystemName: !Ref SystemName, EnvType: !Ref EnvType}
