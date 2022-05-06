@@ -38,6 +38,7 @@ create_change_set () {
 #####################################
 # Distribution 選択
 #####################################
+# create_change_set fedora
 # create_change_set rocky
 
 exit 0

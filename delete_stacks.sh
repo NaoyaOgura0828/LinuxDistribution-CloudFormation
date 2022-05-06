@@ -28,6 +28,7 @@ delete_stack () {
 # Distribution 選択
 #####################################
 # delete_stack rocky
+# delete_stack fedora
 
 #####################################
 # 共通

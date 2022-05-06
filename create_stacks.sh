@@ -29,13 +29,13 @@ create_stack () {
 #####################################
 # 共通
 #####################################
-create_stack network
-create_stack sg
+# create_stack network
+# create_stack sg
 
 #####################################
 # Distribution 選択
 #####################################
-create_stack fedora
+# create_stack fedora
 # create_stack rocky
 
 exit 0
